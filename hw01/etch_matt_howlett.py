@@ -1,4 +1,4 @@
-#!/user/bin/env python3
+#!/usr/bin/env python3 
 def main():
 	etchwinsize=int(input("Window Size nxn n = "))+1 #window size plus one column for row numbers
 	cursorlocation = etchwinsize+2 #sets default location of cursor

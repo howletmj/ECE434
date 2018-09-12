@@ -4,3 +4,8 @@
 4. I am submitting this on git.
 5. I am a part of both beagle groups.
 6. In my git repo hw01 should be the etch a sketch program in Python. Follow on screen instructions to use the program.
+
+Looks good. Single spaced would fit better on a small screen.
+Be sure to do a chmod +x on you file so it will execute.
+
+Score:  9/10
