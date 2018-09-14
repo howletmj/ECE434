@@ -38,9 +38,11 @@ def main():
 		if GPIO.event_detected(Buttons[1]):
 			display_array = ["1"]*etchwinsize*etchwinsize
 			cursorlocation = etchwinsize+2
+			matrixarray = [0x00]*etchwinsize*2
+			previouslocation = cursorlocation
 			display_array = renderdisplay(previouslocation,cursorlocation,etchwinsize,display_array)#renders the text display
 		elif (myEncoder.position<0):#up
-			if (cursorlocation/etchwinsize>1):
+			if (cursorlocation/etchwinsize>0):
 				previouslocation=cursorlocation
 				cursorlocation=cursorlocation-etchwinsize
 				display_array = renderdisplay(previouslocation,cursorlocation,etchwinsize,display_array)#renders the text display
