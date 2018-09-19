@@ -10,3 +10,9 @@ All i2c devices are on i2c bus 2. the rotary encoders are on P8_33, P8_35, P8_41
  In addition. there is a  quit and clear button connected on pins P8_27,P8_28.
 
  
+========================
+Professor Yoder's Comments
+
+Looks good.  right to the point.
+
+Score:10/10
