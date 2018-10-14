@@ -9,3 +9,8 @@
 9.	Mainline is the central version of linux that all versions are based off of.
 10.	 A low priority interrupt prevents the external event from starting.
 11.	Irq threads are used.  Minimal code is used in the interrupts in order to wake up the handler threads.
+
+========================
+Professor Yoder's Comments
+
+Score:  10/10
