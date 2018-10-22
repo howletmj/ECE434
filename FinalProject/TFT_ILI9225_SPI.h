@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include "gfxfont.h"
+#include <string>
 #ifndef TFT_ILI9225_SPI_h
 #define TFT_ILI9225_SPI_h
 
@@ -234,12 +235,12 @@ class TFT_ILI9225_SPI {
         /// @param    color 16-bit color, default=white
         /// @param    bg_color 16-bit background color, default=black
         /// @return   x-position behind text
-        uint16_t  drawText(uint16_t x, uint16_t y, STRING s, uint16_t color);
-        uint16_t  drawText(uint16_t x, uint16_t y, STRING s, uint16_t color, uint16_t bg_color);
+        uint16_t  drawText(uint16_t x, uint16_t y, string s, uint16_t color);
+        uint16_t  drawText(uint16_t x, uint16_t y, string s, uint16_t color, uint16_t bg_color);
 
         /// width of an ASCII Text (pixel )
         /// @param    s text string
-        uint16_t getTextWidth( STRING s ) ;
+        uint16_t getTextWidth( string s ) ;
         
         /// Calculate 16-bit color from 8-bit Red-Green-Blue components
         /// @param    red red component, 0x00..0xff
@@ -330,7 +331,7 @@ class TFT_ILI9225_SPI {
         /// @param    y point coordinate, y-axis
         /// @param    s string to print
         /// @param    color 16-bit color
-        void drawGFXText(int16_t x, int16_t y, STRING s, uint16_t color);
+        void drawGFXText(int16_t x, int16_t y, string s, uint16_t color);
         
         /// Get the width & height of a text string with the current GFX font
         /// @param    str string to analyze

@@ -11,7 +11,7 @@
 #include "gpio-utils.h"
 #include <stdint.h>
 #include <inttypes.h>
-#include <string>
+#include <string.h>
 //in class set default gfxFont = NULL and brightness to max
 static void pabort(const char *s)
 {
@@ -677,31 +677,31 @@ _currentFont TFT_ILI9225_SPI::getFont() {
     return cfont;
 }
 
-uint16_t TFT_ILI9225_SPI::drawText(uint16_t x, uint16_t y, STRING s, uint16_t color) {
+uint16_t TFT_ILI9225_SPI::drawText(uint16_t x, uint16_t y, string s, uint16_t color) {
     uint16_t bg_color = color;
     drawText(x, y, s, color, bg_color);
 }
 
 
-uint16_t TFT_ILI9225_SPI::drawText(uint16_t x, uint16_t y, STRING s, uint16_t color, uint16_t bg_color) {
+uint16_t TFT_ILI9225_SPI::drawText(uint16_t x, uint16_t y, string s, uint16_t color, uint16_t bg_color) {
 
     uint16_t currx = x;
     uint16_t curry = y;
 
     // Print every character in string
-    for (uint8_t k = 0; k < strlen(s); k++) {
+    for (uint8_t k = 0; k < s.length();k++) {
         currx += drawChar(currx, curry, s[k], color, bg_color) + 1;
     }
   
     return currx;
 }
 
-uint16_t TFT_ILI9225_SPI::getTextWidth( STRING s ) {
+uint16_t TFT_ILI9225_SPI::getTextWidth( string s ) {
 
     uint16_t width = 0;
     // Count every character in string ( +1 for spacing )
 
-    for (uint8_t k = 0; k < strlen(s); k++) {
+    for (uint8_t k = 0; k < s.length(); k++) {
         width += getCharWidth(s[k]) + 1;
     }
     return width;
@@ -1010,10 +1010,10 @@ void TFT_ILI9225_SPI::getGFXCharExtent(uint8_t c, int16_t *gw, int16_t *gh, int1
 }
 
 
-void TFT_ILI9225_SPI::getGFXTextExtent(STRING str, int16_t x, int16_t y, int16_t *w, int16_t *h) {
+void TFT_ILI9225_SPI::getGFXTextExtent(string str, int16_t x, int16_t y, int16_t *w, int16_t *h) {
     *w  = *h = 0;
 
-    for (uint8_t k = 0; k < strlen(str); k++) {
+    for (uint8_t k = 0; k < str.length();k++) {
         uint8_t c = str[k];
         int16_t gw, gh, xa;
         getGFXCharExtent(c, &gw, &gh, &xa);
