@@ -11,6 +11,7 @@
 #include "gpio-utils.h"
 #include <stdint.h>
 #include <inttypes.h>
+#include <string>
 //in class set default gfxFont = NULL and brightness to max
 static void pabort(const char *s)
 {
@@ -254,7 +255,7 @@ void TFT_ILI9225_SPI::clear() {
     setOrientation(0);
     fillRectangle(0, 0, _maxX - 1, _maxY - 1, COLOR_BLACK);
     setOrientation(old);
-    delay(10);
+    usleep(10000);
 }
 
 
@@ -279,15 +280,15 @@ void TFT_ILI9225_SPI::setDisplay(bool flag) {
     if (flag) {
         _writeRegister(0x00ff, 0x0000);
         _writeRegister(ILI9225_POWER_CTRL1, 0x0000);
-        delay(50);
+        usleep(50000);
         _writeRegister(ILI9225_DISP_CTRL1, 0x1017);
-        delay(200);
+        usleep(200000);
     } else {
         _writeRegister(0x00ff, 0x0000);
         _writeRegister(ILI9225_DISP_CTRL1, 0x0000);
-        delay(50);
+        usleep(50000);
         _writeRegister(ILI9225_POWER_CTRL1, 0x0003);
-        delay(200);
+        usleep(200000);
     }
 }
 
@@ -324,12 +325,12 @@ uint8_t TFT_ILI9225_SPI::getOrientation() {
 
 
 void TFT_ILI9225_SPI::drawRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
-    checkSPI = false;
+    
     drawLine(x1, y1, x1, y2, color);
     drawLine(x1, y1, x2, y1, color);
     drawLine(x1, y2, x2, y2, color);
     drawLine(x2, y1, x2, y2, color);
-    checkSPI = true;
+    
 }
 
 
@@ -349,7 +350,7 @@ void TFT_ILI9225_SPI::drawCircle(uint16_t x0, uint16_t y0, uint16_t r, uint16_t 
     int16_t ddF_y = -2 * r;
     int16_t x = 0;
     int16_t y = r;
-    checkSPI = false;
+    
 
     drawPixel(x0, y0 + r, color);
     drawPixel(x0, y0-  r, color);
@@ -375,7 +376,7 @@ void TFT_ILI9225_SPI::drawCircle(uint16_t x0, uint16_t y0, uint16_t r, uint16_t 
         drawPixel(x0 + y, y0 - x, color);
         drawPixel(x0 - y, y0 - x, color);
     }
-    checkSPI = true;
+    
 }
 
 
@@ -576,11 +577,10 @@ void TFT_ILI9225_SPI::_writeRegister(uint16_t reg, uint16_t data) {
 
 void TFT_ILI9225_SPI::drawTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint16_t color) {
     
-    checkSPI = false;
     drawLine(x1, y1, x2, y2, color);
     drawLine(x2, y2, x3, y3, color);
     drawLine(x3, y3, x1, y1, color);
-    checkSPI = true;
+    
 }
 
 
@@ -657,7 +657,7 @@ void TFT_ILI9225_SPI::fillTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16
         if (a > b) _swap(a,b);
             drawLine(a, y, b, y, color);
     }
-    checkSPI = true;
+    
 }
 
 void TFT_ILI9225_SPI::setFont(uint8_t* font, bool monoSp) {
@@ -718,8 +718,6 @@ uint16_t TFT_ILI9225_SPI::drawChar(uint16_t x, uint16_t y, uint16_t ch, uint16_t
     if ( cfont.monoSp ) charWidth = cfont.width;      // monospaced: get char width from font
     else                charWidth  = readFontByte(charOffset);  // get chracter width from 1st byte
     charOffset++;  // increment pointer to first character data byte
-
-    checkSPI = false;
     
     // use autoincrement/decrement feature, if character fits completely on screen
     //fastMode = ( (x+charWidth+1) < _maxX && (y+cfont.height-1) < _maxY ) ;
@@ -741,7 +739,6 @@ uint16_t TFT_ILI9225_SPI::drawChar(uint16_t x, uint16_t y, uint16_t ch, uint16_t
             }
         }
     }
-    checkSPI = true;
     _resetWindow();
     return charWidth;
 }
@@ -809,7 +806,6 @@ const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg, bool t
     wh  = wy1-wy0 +1;
     ww  = wx1-wx0 +1;
     _setWindow( wx0,wy0,wx1,wy1,L2R_TopDown);
-    checkSPI = false;
     for (j = y>=0?0:-y; j < (y>=0?0:-y)+wh; j++) {
         for (i = 0; i < w; i++ ) {
             if (i & 7) { if ( Xbit ) byte >>=1; else byte <<= 1; }
@@ -835,7 +831,7 @@ const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg, bool t
             }
         }
     }
-    checkSPI = true;
+    
 }
 
 
@@ -866,7 +862,7 @@ const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg, bool t
 void TFT_ILI9225_SPI::drawBitmap(uint16_t x1, uint16_t y1, 
 const uint16_t** bitmap, int16_t w, int16_t h) {
     _setWindow(x1, y1, x1+w, y1+h);
-    SPI_DC_HIGH();
+    gpio_set_value(DataCgpio,1);
     for (uint16_t x = 0; x < w; x++) {
         for (uint16_t y = 0; y < h; y++) {
             uint16_t col = bitmap[x][y];
@@ -880,7 +876,7 @@ const uint16_t** bitmap, int16_t w, int16_t h) {
 void TFT_ILI9225_SPI::drawBitmap(uint16_t x1, uint16_t y1, 
 uint16_t** bitmap, int16_t w, int16_t h) {
     _setWindow(x1, y1, x1+w, y1+h);
-    SPI_DC_HIGH();
+    gpio_set_value(DataCgpio,1);
     for (uint16_t x = 0; x < w; x++) {
         for (uint16_t y = 0; y < h; y++) {
             uint16_t col = bitmap[x][y];

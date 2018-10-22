@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <inttypes.h>
-#include
+#include "gfxfont.h"
 #ifndef TFT_ILI9225_SPI_h
 #define TFT_ILI9225_SPI_h
 
@@ -134,7 +134,7 @@ class TFT_ILI9225_SPI {
 
         void begin(void);
 
-
+        void TFT_ILI9225_SPI(device,bits,speed,rstgpio,DataCgpio);
         /// Clear the screen
         void clear(void); 
 
