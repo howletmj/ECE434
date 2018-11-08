@@ -26,53 +26,14 @@
 #include <sys/ioctl.h>
 #include <linux/types.h>
 #include <linux/spi/spidev.h>
-#include "RC522.h"
- typedef uint8_t bool;
-#define true 1
-#define false 0
-class RC522 {
-	static const char *device = "/dev/spidev1.0";
-	static uint8_t mode;
-	static uint8_t bits = 8;
-	static uint32_t speed = 10000;
-	static uint16_t delay;
-	int fd;
-	uint8_t CRC_A_Result[2];
-	uint8_t Rx_Global[100];
-	uint8_t UID[5];
-	uint8_t UID_OLD[5];
-	uint8_t SAK_Response[3];
-	uint8_t ATQA_Buffer[2];
-	public:
-		void MFRC522_Initialize(void);
-		bool IsNewCardPresent(void);
-		uint8_t SelectPICC(void);
-		bool NewUID(void);
-		void SPI_Start(void);
-	private:
-		void AntennaOn(void);
+#include "MFRC522.h"
 
-		uint8_t REQA_or_WUPA_Request(uint8_t Request);
-		uint8_t CommunicateWithPICC(uint8_t Command, uint8_t ValidBits, uint8_t InterruptRequestBits, uint8_t SendCount, uint8_t *SendValues,
-									uint8_t ReturnCount, uint8_t *ReturnValues);
-
-		bool BCC_CheckOk(void);
-		bool CRC_A_Calculation(uint8_t *SendValues, uint8_t SendCount);
-		void DigitalSelfTestOperation (void);
-
-		void RegisterWrite(uint8_t RegisterAddress, uint8_t RegisterValue);
-		uint8_t RegisterRead(uint8_t RegisterAddress);
-		void SetRegisterBits(uint8_t RegisterAddress, uint8_t Mask);
-		void ClearRegisterBits(uint8_t RegisterAddress, uint8_t Mask);
-
-		void RegisterWriteMultiple(uint8_t RegisterAddress, uint8_t Count, uint8_t *RegisterValues);
-		void RegisterReadMultiple(uint8_t RegisterAddress, uint8_t Count);
-		void close(void);
-};
-
-
-
-
+RC522:: RC522(const char* devices, char bites, uint32_t speeds){
+device=devices;
+bits=bites;
+speed=speeds;
+printf(device);
+}
 
 
 static void pabort(const char *s)
@@ -80,7 +41,7 @@ static void pabort(const char *s)
         perror(s);
         abort();
 }
-void RC522::close(void){
+void RC522::closer(void){
 	close(fd);
 }
 void RC522::SPI_Start(void){
@@ -117,7 +78,9 @@ bool RC522::NewUID(void){
 		UID_OLD[1]!=UID[1]&&
 		UID_OLD[2]!=UID[2]&&
 		UID_OLD[3]!=UID[3]&&
-		UID_OLD[4]!=UID[4]
+		UID_OLD[4]!=UID[4])
+	return 1;
+	else return 0;
 }
 
 /**
@@ -519,12 +482,12 @@ void RC522::RegisterReadMultiple(uint8_t RegisterAddress, uint8_t Count)
 
         /*SPI Configurations for GPIO*/
         struct spi_ioc_transfer tr={
-               .tx_buf = (unsigned long)tx_temp,
-               .rx_buf = (unsigned long)rx,
-               .len = sizeof(tx_temp),
-               .delay_usecs = delay,
-               .speed_hz = speed,
-               .bits_per_word = bits};
+              tx_buf : (unsigned long)tx_temp,
+              rx_buf : (unsigned long)rx,
+              len : sizeof(tx_temp),
+              delay_usecs : delay,
+              speed_hz : speed,
+              bits_per_word : bits};
 
         /*Send the data*/
         ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
@@ -569,12 +532,13 @@ void RC522::RegisterWriteMultiple(uint8_t RegisterAddress, uint8_t Count, uint8_
 
         /*SPI Configurations for GPIO*/
         struct spi_ioc_transfer tr={
-               .tx_buf = (unsigned long)tx_temp,
-               .rx_buf = (unsigned long)rx,
-               .len = sizeof(tx_temp),
-               .delay_usecs = delay,
-               .speed_hz = speed,
-               .bits_per_word = bits};
+               tx_buf : (unsigned long)tx_temp,
+               rx_buf : (unsigned long)rx,
+               len : sizeof(tx_temp),
+               delay_usecs : delay,
+               speed_hz : speed,
+               bits_per_word : bits};
+
 
 
         /*Send the data*/
@@ -679,13 +643,14 @@ void RC522::RegisterWrite(uint8_t RegisterAddress, uint8_t RegisterValue)
         uint8_t *rx = (uint8_t *) malloc(sizeof(uint8_t) * 2);
 
         /*SPI Configurations for GPIO*/
- struct spi_ioc_transfer tr={
-               .tx_buf = (unsigned long)tx_temp,
-               .rx_buf = (unsigned long)rx,
-               .len = sizeof(tx_temp),
-               .delay_usecs = delay,
-               .speed_hz = speed,
-               .bits_per_word = bits};
+        struct spi_ioc_transfer tr={
+               tx_buf : (unsigned long)tx_temp,
+               rx_buf : (unsigned long)rx,
+               len : sizeof(tx_temp),
+               delay_usecs : delay,
+               speed_hz : speed,
+               bits_per_word : bits};
+
 
 
         /*Send the data*/
@@ -711,13 +676,14 @@ uint8_t RC522::RegisterRead(uint8_t RegisterAddress)
         uint8_t *rx = (uint8_t *) malloc(sizeof(uint8_t) * 2);
 
         /*SPI Configurations for GPIO*/
- struct spi_ioc_transfer tr={
-               .tx_buf = (unsigned long)tx_temp,
-               .rx_buf = (unsigned long)rx,
-               .len = sizeof(tx_temp),
-               .delay_usecs = delay,
-               .speed_hz = speed,
-               .bits_per_word = bits};
+        struct spi_ioc_transfer tr={
+               tx_buf : (unsigned long)tx_temp,
+               rx_buf : (unsigned long)rx,
+               len : sizeof(tx_temp),
+               delay_usecs : delay,
+               speed_hz : speed,
+               bits_per_word : bits};
+
 
 
         /*Send the data*/
@@ -734,41 +700,3 @@ uint8_t RC522::RegisterRead(uint8_t RegisterAddress)
         return ReadRegisterReturnValue;
 }
 
-
-int main(int argc, char *argv[])
-{
-
-        
-//      int temp = 0;
-
-		RC522 RFID;
-        RFID.SPI_Start();
-
-
-
-        //Initialize the MFRC522
-        RFID.MFRC522_Initialize();
-		printf("Initializing Done\n");
-        while(true)
-        {
-            if(RFID.IsNewCardPresent()){
-				RFID.SelectPICC();
-				if(RFID.NewUID()){
-					printf("New Card Yall\n");
-					printf("UID:");
-					for(char i =0;i<5;i++){
-						printf("%X",RFID.UID[i]);
-					}
-					printf("\n");
-				}
-			}
-                
-        }
-		//render a display permit access button on touch screen
-		//wait for response
-		//if yes put something on blink and email
-
-        RFID.close(); //Close File
-
-        return 0;
-}

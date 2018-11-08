@@ -2,7 +2,7 @@
 #include <inttypes.h>
 #include "gfxfont.h"
 #include <string.h>
-#include <string>
+
 #include <stdlib.h>
 
 #ifndef TFT_ILI9225_SPI_h
@@ -21,10 +21,12 @@
 #else
  #define pgm_read_pointer(addr) ((void *)pgm_read_word(addr))
 #endif
+typedef enum { false, true } bool;
+uint16_t _maxX, _maxY;
 /* ILI9225 screen size */
 #define ILI9225_LCD_WIDTH  176
 #define ILI9225_LCD_HEIGHT 220
-#define string std::string
+#define string const char*
 /* ILI9225 LCD Registers */
 #define ILI9225_DRIVER_OUTPUT_CTRL      (0x01u)  // Driver Output Control
 #define ILI9225_LCD_AC_DRIVING_CTRL     (0x02u)  // LCD AC Driving Control
@@ -68,7 +70,7 @@
 #define ILI9225C_INVON   0x21
 
 // autoincrement modes (register ILI9225_ENTRY_MODE, bit 5..3 )
-enum autoIncMode_t { R2L_BottomUp, BottomUp_R2L, L2R_BottomUp, BottomUp_L2R, R2L_TopDown, TopDown_R2L, L2R_TopDown, TopDown_L2R };
+enum  { R2L_BottomUp, BottomUp_R2L, L2R_BottomUp, BottomUp_L2R, R2L_TopDown, TopDown_R2L, L2R_TopDown, TopDown_L2R }autoIncMode_t;
 
 /* RGB 16-bit color table definition (RG565) */
 #define COLOR_BLACK          0x0000      /*   0,   0,   0 */
@@ -131,13 +133,10 @@ struct _currentFont
     uint8_t numchars;
     uint8_t nbrows;
     bool    monoSp;
-};
+}cfont;
 #define MONOSPACE   1
 
 /// Main and core class
-class TFT_ILI9225_SPI {
-
-    public:
 		const char *device;
 		uint8_t mode;
 		uint8_t bits;
@@ -151,36 +150,36 @@ class TFT_ILI9225_SPI {
 	
         /// Initialization
 
-        void begin(void);
+extern void begin(void);
 
-        TFT_ILI9225_SPI(unsigned int newrstgpio,unsigned int newDataCgpio,const char* newdevice,uint16_t newspeed);
+      extern   void TFT_ILI9225_SPI(unsigned int newrstgpio,unsigned int newDataCgpio,const char* newdevice,uint16_t newspeed);
 
         /// Clear the screen
-        void clear(void); 
+      extern   void clear(void); 
 
         /// Invert screen
         /// @param     flag true to invert, false for normal screen
-        void invert(bool flag);
+       extern  void invert(bool flag);
 
         /// Switch backlight on or off
         /// @param     flag true=on, false=off
-        void setBacklight(bool flag); 
+       extern  void setBacklight(bool flag); 
 
         /// Set backlight brightness
         /// @param     brightness sets backlight brightness 0-255
-        void setBacklightBrightness(uint8_t brightness); 
+       extern  void setBacklightBrightness(uint8_t brightness); 
 
         /// Switch display on or off
         /// @param     flag true=on, false=off
-        void setDisplay(bool flag);  
+       extern  void setDisplay(bool flag);  
 
         /// Set orientation
         /// @param     orientation orientation, 0=portrait, 1=right rotated landscape, 2=reverse portrait, 3=left rotated landscape
-        void setOrientation(uint8_t orientation);  
+       extern  void setOrientation(uint8_t orientation);  
 
         /// Get orientation
         /// @return    orientation orientation, 0=portrait, 1=right rotated landscape, 2=reverse portrait, 3=left rotated landscape
-        uint8_t getOrientation(void); 
+extern         uint8_t getOrientation(void); 
 
         /// Font size, x-axis
         /// @return    horizontal size of current font, in pixels
@@ -193,26 +192,26 @@ class TFT_ILI9225_SPI {
         /// Screen size, x-axis
         /// @return   horizontal size of the screen, in pixels
         /// @note     240 means 240 pixels and thus 0..239 coordinates (decimal)
-        uint16_t maxX(void);
+extern         uint16_t maxX(void);
 
         /// Screen size, y-axis
         /// @return   vertical size of the screen, in pixels
         /// @note     220 means 220 pixels and thus 0..219 coordinates (decimal)
-        uint16_t maxY(void);
+extern         uint16_t maxY(void);
 
         /// Draw circle
         /// @param    x0 center, point coordinate, x-axis
         /// @param    y0 center, point coordinate, y-axis
         /// @param    radius radius
         /// @param    color 16-bit color
-        void drawCircle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t color);  
+       extern  void drawCircle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t color);  
 
         /// Draw solid circle
         /// @param    x0 center, point coordinate, x-axis
         /// @param    y0 center, point coordinate, y-axis
         /// @param    radius radius
         /// @param    color 16-bit color
-        void fillCircle(uint8_t x0, uint8_t y0, uint8_t radius, uint16_t color); 
+      extern   void fillCircle(uint8_t x0, uint8_t y0, uint8_t radius, uint16_t color); 
 
         /// Draw line, rectangle coordinates
         /// @param    x1 start point coordinate, x-axis
@@ -220,7 +219,7 @@ class TFT_ILI9225_SPI {
         /// @param    x2 end point coordinate, x-axis
         /// @param    y2 end point coordinate, y-axis
         /// @param    color 16-bit color
-        void drawLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color); 
+        extern void drawLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color); 
 
         /// Draw rectangle, rectangle coordinates
         /// @param    x1 top left coordinate, x-axis
@@ -228,7 +227,7 @@ class TFT_ILI9225_SPI {
         /// @param    x2 bottom right coordinate, x-axis
         /// @param    y2 bottom right coordinate, y-axis
         /// @param    color 16-bit color
-        void drawRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color); 
+        extern void drawRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color); 
 
         /// Draw solid rectangle, rectangle coordinates
         /// @param    x1 top left coordinate, x-axis
@@ -236,16 +235,16 @@ class TFT_ILI9225_SPI {
         /// @param    x2 bottom right coordinate, x-axis
         /// @param    y2 bottom right coordinate, y-axis
         /// @param    color 16-bit color
-        void fillRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
+       extern  void fillRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
 
         /// Draw pixel
         /// @param    x1 point coordinate, x-axis
         /// @param    y1 point coordinate, y-axis
         /// @param    color 16-bit color
 
-        virtual void fillScreen(uint16_t color){ fillRectangle(0, 0, _maxX, _maxY, color); };
+        extern void fillScreen(uint16_t color){ fillRectangle(0, 0, _maxX, _maxY, color); 
 
-        void drawPixel(uint16_t x1, uint16_t y1, uint16_t color);  
+       extern  void drawPixel(uint16_t x1, uint16_t y1, uint16_t color);  
 
         /// Draw ASCII Text (pixel coordinates)
         /// @param    x point coordinate, x-axis
@@ -254,26 +253,26 @@ class TFT_ILI9225_SPI {
         /// @param    color 16-bit color, default=white
         /// @param    bg_color 16-bit background color, default=black
         /// @return   x-position behind text
-        uint16_t  drawText(uint16_t x, uint16_t y, string s, uint16_t color);
-        uint16_t  drawText(uint16_t x, uint16_t y, string s, uint16_t color, uint16_t bg_color);
+        extern uint16_t  drawText(uint16_t x, uint16_t y, string s, uint16_t color);
+        
 
         /// width of an ASCII Text (pixel )
         /// @param    s text string
-        uint16_t getTextWidth( string s ) ;
+        extern uint16_t getTextWidth( string s ) ;
         
         /// Calculate 16-bit color from 8-bit Red-Green-Blue components
         /// @param    red red component, 0x00..0xff
         /// @param    green green component, 0x00..0xff
         /// @param    blue blue component, 0x00..0xff
         /// @return   16-bit color
-        uint16_t setColor(uint8_t red, uint8_t green, uint8_t blue);
+        extern uint16_t setColor(uint8_t red, uint8_t green, uint8_t blue);
 
         /// Calculate 8-bit Red-Green-Blue components from 16-bit color
         /// @param    rgb 16-bit color
         /// @param    red red component, 0x00..0xff
         /// @param    green green component, 0x00..0xff
         /// @param    blue blue component, 0x00..0xff
-        void splitColor(uint16_t rgb, uint8_t &red, uint8_t &green, uint8_t &blue);
+        extern void splitColor(uint16_t rgb, uint8_t red, uint8_t green, uint8_t blue);
 
         /// Draw triangle, triangle coordinates
         /// @param    x1 corner 1 coordinate, x-axis
@@ -283,7 +282,7 @@ class TFT_ILI9225_SPI {
         /// @param    x3 corner 3 coordinate, x-axis
         /// @param    y3 corner 3 coordinate, y-axis
         /// @param    color 16-bit color
-        void drawTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint16_t color); 
+        extern void drawTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint16_t color); 
 
         /// Draw solid triangle, triangle coordinates
         /// @param    x1 corner 1 coordinate, x-axis
@@ -293,14 +292,14 @@ class TFT_ILI9225_SPI {
         /// @param    x3 corner 3 coordinate, x-axis
         /// @param    y3 corner 3 coordinate, y-axis
         /// @param    color 16-bit color
-        void fillTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint16_t color);
+        extern void fillTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint16_t color);
 
         /// Set current font
         /// @param    font Font name
-        void setFont(uint8_t* font, bool monoSp=false ); // default = proportional
+        extern void setFont(uint8_t* font, bool monoSp ); // default = proportional
         
         /// Get current font
-        _currentFont getFont();
+        
         
         /// Draw single character (pixel coordinates)
         /// @param    x point coordinate, x-axis
@@ -308,11 +307,11 @@ class TFT_ILI9225_SPI {
         /// @param    ch ASCII character
         /// @param    color 16-bit color, default=white
         /// @return   width of character in display pixels
-        uint16_t drawChar(uint16_t x, uint16_t y, uint16_t ch, uint16_t color = COLOR_WHITE, uint16_t bg_color = COLOR_WHITE);
+        extern uint16_t drawChar(uint16_t x, uint16_t y, uint16_t ch, uint16_t color , uint16_t bg_color );
 
         /// width of an ASCII character (pixel )
         /// @param    ch ASCII character
-        uint16_t getCharWidth( uint16_t ch ) ;
+        extern uint16_t getCharWidth( uint16_t ch ) ;
         
         /// Draw bitmap
         /// @param    x point coordinate, x-axis
@@ -322,13 +321,13 @@ class TFT_ILI9225_SPI {
         /// @param    h height
         /// @param    color 16-bit color, default=white
         /// @param    bg 16-bit color, background
-        void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color);
-        void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg);
-        void drawBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t h, uint16_t color);
-        void drawBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg);
+        
+        
+        extern void drawBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t h, uint16_t color);
+        
 
-        void drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color);
-        void drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg);
+        
+        
         
         /// Draw bitmap
         /// @param    x point coordinate, x-axis
@@ -336,21 +335,20 @@ class TFT_ILI9225_SPI {
         /// @param    bitmap, 2D 16bit color bitmap 
         /// @param    w width
         /// @param    h height
-        void drawBitmap(uint16_t x, uint16_t y, const uint16_t** bitmap, int16_t w, int16_t h);
-        void drawBitmap(uint16_t x, uint16_t y, uint16_t** bitmap, int16_t w, int16_t h);
+        
 
-        void vertScroll(int16_t top, int16_t scrollines, int16_t offset);
+        extern void vertScroll(int16_t top, int16_t scrollines, int16_t offset);
 
         /// Set current GFX font
         /// @param    f GFX font name defined in include file
-        void setGFXFont(const GFXfont *f = NULL);
+        extern void setGFXFont(const GFXfont *f);
 
         /// Draw a string with the current GFX font
         /// @param    x point coordinate, x-axis
         /// @param    y point coordinate, y-axis
         /// @param    s string to print
         /// @param    color 16-bit color
-        void drawGFXText(int16_t x, int16_t y, string s, uint16_t color);
+        extern void drawGFXText(int16_t x, int16_t y, string s, uint16_t color);
         
         /// Get the width & height of a text string with the current GFX font
         /// @param    str string to analyze
@@ -358,7 +356,7 @@ class TFT_ILI9225_SPI {
         /// @param    y point coordinate, y-axis
         /// @param    w width in pixels of string 
         /// @param    h height in pixels of string
-        void getGFXTextExtent(string str, int16_t x, int16_t y, int16_t *w, int16_t *h);
+        extern void getGFXTextExtent(string str, int16_t x, int16_t y, int16_t *w, int16_t *h);
         
         /// Draw a single character with the current GFX font
         /// @param    x point coordinate, x-axis
@@ -366,49 +364,44 @@ class TFT_ILI9225_SPI {
         /// @param    c character to draw
         /// @param    color 16-bit color
         /// @return   width of character in display pixels
-        uint16_t drawGFXChar(int16_t x, int16_t y, unsigned char c, uint16_t color);
+        extern uint16_t drawGFXChar(int16_t x, int16_t y, unsigned char c, uint16_t color);
 
 
-    private:
 
-        void _spiWrite(uint8_t v);
-        void _spiWriteCommand(uint8_t c);
-        void _spiWriteData(uint8_t d);
-	uint16_t Read16(void);
-        void _swap(uint16_t &a, uint16_t &b);
-        void _setWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
-        void _setWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, autoIncMode_t mode);
-        void _resetWindow();
-        void _drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, 
+
+extern         void _spiWrite(uint8_t v);
+       extern  void _spiWriteCommand(uint8_t c);
+      extern   void _spiWriteData(uint8_t d);
+extern 	uint16_t Read16(void);
+      extern   void _swap(uint16_t a, uint16_t b);
+      extern   void _setWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+        
+      extern   void _resetWindow();
+       extern  void _drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, 
                             uint16_t color, uint16_t bg, bool transparent, bool progmem, bool Xbit );
-        void _orientCoordinates(uint16_t &x1, uint16_t &y1);
-        void _writeRegister(uint16_t reg, uint16_t data);
-        void _writeData(uint8_t HI, uint8_t LO);
-        void _writeData16(uint16_t HILO);
-        void _writeCommand(uint8_t HI, uint8_t LO);
-        void _writeCommand16(uint16_t HILO);
+       extern  void _orientCoordinates(uint16_t x1, uint16_t y1);
+       extern  void _writeRegister(uint16_t reg, uint16_t data);
+      extern   void _writeData(uint8_t HI, uint8_t LO);
+       extern  void _writeData16(uint16_t HILO);
+       extern  void _writeCommand(uint8_t HI, uint8_t LO);
+       extern  void _writeCommand16(uint16_t HILO);
         uint16_t _maxX, _maxY, _bgColor;
 
         uint8_t  _orientation;
         uint16_t _brightness;
         
         // correspondig modes if orientation changed:
-        const autoIncMode_t modeTab [3][8] = {
-        //          { R2L_BottomUp, BottomUp_R2L, L2R_BottomUp, BottomUp_L2R, R2L_TopDown,  TopDown_R2L,  L2R_TopDown,  TopDown_L2R }//
-        /* 90° */   { BottomUp_L2R, L2R_BottomUp, TopDown_L2R,  L2R_TopDown,  BottomUp_R2L, R2L_BottomUp, TopDown_R2L,  R2L_TopDown },   
-        /*180° */   { L2R_TopDown , TopDown_L2R,  R2L_TopDown,  TopDown_R2L,  L2R_BottomUp, BottomUp_L2R, R2L_BottomUp, BottomUp_R2L}, 
-        /*270° */   { TopDown_R2L , R2L_TopDown,  BottomUp_R2L, R2L_BottomUp, TopDown_L2R,  L2R_TopDown,  BottomUp_L2R, L2R_BottomUp}
-                };
+        const autoIncMode_t modeTab [3][8] = { { BottomUp_L2R, L2R_BottomUp, TopDown_L2R,  L2R_TopDown,  BottomUp_R2L, R2L_BottomUp, TopDown_R2L,  R2L_TopDown }, { L2R_TopDown , TopDown_L2R,  R2L_TopDown,  TopDown_R2L,  L2R_BottomUp, BottomUp_L2R, R2L_BottomUp, BottomUp_R2L}, { TopDown_R2L , R2L_TopDown,  BottomUp_R2L, R2L_BottomUp, TopDown_L2R,  L2R_TopDown,  BottomUp_L2R, L2R_BottomUp} };
  
 
         bool  hwSPI, checkSPI, blState;
 
-        _currentFont cfont;
+        
 
-    protected:
+
 
         void getGFXCharExtent(uint8_t c, int16_t *gw, int16_t *gh, int16_t *xa);
         
         GFXfont *gfxFont;
-};
+
 #endif

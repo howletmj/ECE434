@@ -1,4 +1,4 @@
-#include "TFT_ILI9225_SPI.h"
+#include "TFT_ILI9225.h"
 #include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -8,15 +8,16 @@
 #include <sys/ioctl.h>
 #include <linux/types.h>
 #include <linux/spi/spidev.h>
-extern "C" {
+
 #include "gpio-utils.h"
-}
+
 #include <stdint.h>
 #include <inttypes.h>
 #include <string.h>
-#include <string>
+
 //in class set default gfxFont = NULL and brightness to max
-#define string std::string
+#define string const char*
+
 #ifndef pgm_read_byte
  #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
 #endif
@@ -42,10 +43,10 @@ uint16_t min(uint16_t var1,uint16_t var2){
 		return var1;
 	else return var2;
 }
-uint16_t TFT_ILI9225_SPI::bitRead(uint16_t data,uint8_t bit){
+uint16_t bitRead(uint16_t data,uint8_t bit){
 return (((data) >> (bit)) & 0x01);
 }
-TFT_ILI9225_SPI::TFT_ILI9225_SPI(unsigned int newrstgpio,unsigned int newDataCgpio,const char* newdevice,uint16_t newspeed){
+void TFT_ILI9225_SPI(unsigned int newrstgpio,unsigned int newDataCgpio,const char* newdevice,uint16_t newspeed){
 rstgpio = newrstgpio;
 DataCgpio = newDataCgpio;
 device=newdevice;
@@ -53,7 +54,7 @@ bits=8;
 speed=newspeed;
 
 }
-void TFT_ILI9225_SPI::_spiWrite(uint8_t v){
+void _spiWrite(uint8_t v){
 	        uint8_t rx;
 		signed char ret;
 			struct spi_ioc_transfer tr={
@@ -69,7 +70,7 @@ void TFT_ILI9225_SPI::_spiWrite(uint8_t v){
 		if (ret < 1)
                 pabort("Can't send spi message");
 }
-void TFT_ILI9225_SPI::begin()
+void begin()
 {
 		signed char ret;
 		fd = open(device, O_RDWR);
@@ -194,18 +195,18 @@ void TFT_ILI9225_SPI::begin()
 
 
 
-void TFT_ILI9225_SPI::_spiWriteCommand(uint8_t c) {
+void _spiWriteCommand(uint8_t c) {
     gpio_set_value(DataCgpio,0);
     _spiWrite(c);
 }
 
 
-void TFT_ILI9225_SPI::_spiWriteData(uint8_t c) {
+void _spiWriteData(uint8_t c) {
     gpio_set_value(DataCgpio,1);
     _spiWrite(c);
 }
 
-void TFT_ILI9225_SPI::_orientCoordinates(uint16_t &x1, uint16_t &y1) {
+void _orientCoordinates(uint16_t x1, uint16_t y1) {
 
     switch (_orientation) {
     case 0:  // ok
@@ -225,11 +226,7 @@ void TFT_ILI9225_SPI::_orientCoordinates(uint16_t &x1, uint16_t &y1) {
     }
 }
 
-void TFT_ILI9225_SPI::_setWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
-    _setWindow( x0, y0, x1, y1, TopDown_L2R ); // default for drawing characters
-}
-
-void TFT_ILI9225_SPI::_setWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, autoIncMode_t mode) {
+void _setWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
     
     // clip to TFT-Dimensions
     x0 = min( x0, (uint16_t) (_maxX-1) );
@@ -243,7 +240,7 @@ void TFT_ILI9225_SPI::_setWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t
     if (y1<y0) _swap(y0, y1);
 
     // autoincrement mode
-    if ( _orientation > 0 ) mode = modeTab[_orientation-1][mode];
+    if ( _orientation > 0 ) mode = modeTab[_orientation-1][TopDown_L2R];
     _writeRegister(ILI9225_ENTRY_MODE, 0x1000 | ( mode<<3) );
     _writeRegister(ILI9225_HORIZONTAL_WINDOW_ADDR1,x1);
     _writeRegister(ILI9225_HORIZONTAL_WINDOW_ADDR2,x0);
@@ -279,7 +276,7 @@ void TFT_ILI9225_SPI::_setWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t
 }
 
 
-void TFT_ILI9225_SPI::_resetWindow() {
+void _resetWindow() {
     _writeRegister(ILI9225_HORIZONTAL_WINDOW_ADDR1, 0x00AF); 
     _writeRegister(ILI9225_HORIZONTAL_WINDOW_ADDR2, 0x0000); 
     _writeRegister(ILI9225_VERTICAL_WINDOW_ADDR1, 0x00DB); 
@@ -287,7 +284,7 @@ void TFT_ILI9225_SPI::_resetWindow() {
 
 }
 
-void TFT_ILI9225_SPI::clear() {
+void clear() {
     uint8_t old = _orientation;
     setOrientation(0);
     fillRectangle(0, 0, _maxX - 1, _maxY - 1, COLOR_BLACK);
@@ -296,24 +293,24 @@ void TFT_ILI9225_SPI::clear() {
 }
 
 
-void TFT_ILI9225_SPI::invert(bool flag) {
+void invert(bool flag) {
     _writeCommand16(flag ? ILI9225C_INVON : ILI9225C_INVOFF);
     //_writeCommand(0x00, flag ? ILI9225C_INVON : ILI9225C_INVOFF);
 }
 
 
-void TFT_ILI9225_SPI::setBacklight(bool flag) {
+void setBacklight(bool flag) {
     blState = flag;
 }
 
 
-void TFT_ILI9225_SPI::setBacklightBrightness(uint8_t brightness) {
+void setBacklightBrightness(uint8_t brightness) {
     _brightness = brightness;
     setBacklight(blState);
 }
 
 
-void TFT_ILI9225_SPI::setDisplay(bool flag) {
+void setDisplay(bool flag) {
     if (flag) {
         _writeRegister(0x00ff, 0x0000);
         _writeRegister(ILI9225_POWER_CTRL1, 0x0000);
@@ -330,7 +327,7 @@ void TFT_ILI9225_SPI::setDisplay(bool flag) {
 }
 
 
-void TFT_ILI9225_SPI::setOrientation(uint8_t orientation) {
+void setOrientation(uint8_t orientation) {
 
     _orientation = orientation % 4;
 
@@ -356,12 +353,12 @@ void TFT_ILI9225_SPI::setOrientation(uint8_t orientation) {
 }
 
 
-uint8_t TFT_ILI9225_SPI::getOrientation() {
+uint8_t getOrientation() {
     return _orientation;
 }
 
 
-void TFT_ILI9225_SPI::drawRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
+void drawRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
     
     drawLine(x1, y1, x1, y2, color);
     drawLine(x1, y1, x2, y1, color);
@@ -371,7 +368,7 @@ void TFT_ILI9225_SPI::drawRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint1
 }
 
 
-void TFT_ILI9225_SPI::fillRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
+void fillRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
 
     _setWindow(x1, y1, x2, y2);
     for(uint16_t t=(y2 - y1 + 1) * (x2 - x1 + 1); t > 0; t--)
@@ -380,7 +377,7 @@ void TFT_ILI9225_SPI::fillRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint1
 }
 
 
-void TFT_ILI9225_SPI::drawCircle(uint16_t x0, uint16_t y0, uint16_t r, uint16_t color) {
+void drawCircle(uint16_t x0, uint16_t y0, uint16_t r, uint16_t color) {
 
     int16_t f = 1 - r;
     int16_t ddF_x = 1;
@@ -417,7 +414,7 @@ void TFT_ILI9225_SPI::drawCircle(uint16_t x0, uint16_t y0, uint16_t r, uint16_t 
 }
 
 
-void TFT_ILI9225_SPI::fillCircle(uint8_t x0, uint8_t y0, uint8_t radius, uint16_t color) {
+void fillCircle(uint8_t x0, uint8_t y0, uint8_t radius, uint16_t color) {
 
     int16_t f = 1 - radius;
     int16_t ddF_x = 1;
@@ -444,7 +441,7 @@ void TFT_ILI9225_SPI::fillCircle(uint8_t x0, uint8_t y0, uint8_t radius, uint16_
 }
 
 
-void TFT_ILI9225_SPI::drawLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
+void drawLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
 
     // Classic Bresenham algorithm
     int16_t steep = abs((int16_t)(y2 - y1)) > abs((int16_t)(x2 - x1));
@@ -483,7 +480,7 @@ void TFT_ILI9225_SPI::drawLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y
 }
 
 
-void TFT_ILI9225_SPI::drawPixel(uint16_t x1, uint16_t y1, uint16_t color) {
+void drawPixel(uint16_t x1, uint16_t y1, uint16_t color) {
 
     if((x1 >= _maxX) || (y1 >= _maxY)) return;
 /*
@@ -504,23 +501,23 @@ void TFT_ILI9225_SPI::drawPixel(uint16_t x1, uint16_t y1, uint16_t color) {
 }
 
 
-uint16_t TFT_ILI9225_SPI::maxX() {
+uint16_t maxX() {
     return _maxX;
 }
 
 
-uint16_t TFT_ILI9225_SPI::maxY() {
+uint16_t maxY() {
     return _maxY;
 }
 
 
-uint16_t TFT_ILI9225_SPI::setColor(uint8_t red8, uint8_t green8, uint8_t blue8) {
+uint16_t setColor(uint8_t red8, uint8_t green8, uint8_t blue8) {
     // rgb16 = red5 green6 blue5
     return (red8 >> 3) << 11 | (green8 >> 2) << 5 | (blue8 >> 3);
 }
 
 
-void TFT_ILI9225_SPI::splitColor(uint16_t rgb, uint8_t &red, uint8_t &green, uint8_t &blue) {
+void splitColor(uint16_t rgb, uint8_t red, uint8_t green, uint8_t blue) {
     // rgb16 = red5 green6 blue5
     red   = (rgb & 0b1111100000000000) >> 11 << 3;
     green = (rgb & 0b0000011111100000) >>  5 << 2;
@@ -528,7 +525,7 @@ void TFT_ILI9225_SPI::splitColor(uint16_t rgb, uint8_t &red, uint8_t &green, uin
 }
 
 
-void TFT_ILI9225_SPI::_swap(uint16_t &a, uint16_t &b) {
+void _swap(uint16_t a, uint16_t b) {
     uint16_t w = a;
     a = b;
     b = w;
@@ -559,7 +556,7 @@ void TFT_ILI9225_SPI::_writeData16(uint16_t data) {
 #endif
 }
 */
-void TFT_ILI9225_SPI::_writeCommand16(uint16_t command) {
+void _writeCommand16(uint16_t command) {
     gpio_set_value(DataCgpio,0);
 	char ret;
 	uint16_t rx;
@@ -578,7 +575,7 @@ void TFT_ILI9225_SPI::_writeCommand16(uint16_t command) {
 //16bit spi transfer
 }
 
-void TFT_ILI9225_SPI::_writeData16(uint16_t data) {
+void _writeData16(uint16_t data) {
     gpio_set_value(DataCgpio,1);
 	signed char ret;
 	uint16_t rx;
@@ -608,13 +605,13 @@ void TFT_ILI9225_SPI::_writeCommand(uint8_t HI, uint8_t LO) {
 }*/
 
 
-void TFT_ILI9225_SPI::_writeRegister(uint16_t reg, uint16_t data) {
+void _writeRegister(uint16_t reg, uint16_t data) {
     _writeCommand16(reg);
     _writeData16(data);
 }
 
 
-void TFT_ILI9225_SPI::drawTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint16_t color) {
+void drawTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint16_t color) {
     
     drawLine(x1, y1, x2, y2, color);
     drawLine(x2, y2, x3, y3, color);
@@ -623,7 +620,7 @@ void TFT_ILI9225_SPI::drawTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16
 }
 
 
-void TFT_ILI9225_SPI::fillTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint16_t color) {
+void fillTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint16_t color) {
 
     uint16_t a, b, y, last;
 
@@ -699,7 +696,7 @@ void TFT_ILI9225_SPI::fillTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16
     
 }
 
-void TFT_ILI9225_SPI::setFont(uint8_t* font, bool monoSp) {
+void setFont(uint8_t* font, bool monoSp) {
 
     cfont.font     = font;
     cfont.width    = readFontByte(0);
@@ -712,41 +709,32 @@ void TFT_ILI9225_SPI::setFont(uint8_t* font, bool monoSp) {
     if (cfont.height % 8) cfont.nbrows++;  // Set number of bytes used by height of font in multiples of 8
 }
 
-_currentFont TFT_ILI9225_SPI::getFont() {
-    return cfont;
-}
 
-uint16_t TFT_ILI9225_SPI::drawText(uint16_t x, uint16_t y, string s, uint16_t color) {
-    uint16_t bg_color = color;
-    drawText(x, y, s, color, bg_color);
-}
-
-
-uint16_t TFT_ILI9225_SPI::drawText(uint16_t x, uint16_t y, string s, uint16_t color, uint16_t bg_color) {
+uint16_t drawText(uint16_t x, uint16_t y, string s, uint16_t color) {
 
     uint16_t currx = x;
     uint16_t curry = y;
 
     // Print every character in string
-    for (uint8_t k = 0; k <s.length();k++) {
-        currx += drawChar(currx, curry, s[k], color, bg_color) + 1;
+    for (uint8_t k = 0; k <strlen(s);k++) {
+        currx += drawChar(currx, curry, s[k], color, color) + 1;
     }
   
     return currx;
 }
 
-uint16_t TFT_ILI9225_SPI::getTextWidth( string s ) {
+uint16_t getTextWidth( string s ) {
 
     uint16_t width = 0;
     // Count every character in string ( +1 for spacing )
 
-    for (uint8_t k = 0; k <s.length(); k++) {
+    for (uint8_t k = 0; k <strlen(s); k++) {
         width += getCharWidth(s[k]) + 1;
     }
     return width;
 }
 
-uint16_t TFT_ILI9225_SPI::drawChar(uint16_t x, uint16_t y, uint16_t ch, uint16_t color, uint16_t bg_color) {
+uint16_t drawChar(uint16_t x, uint16_t y, uint16_t ch, uint16_t color, uint16_t bg_color) {
 
     uint8_t charData, charWidth;
     uint8_t h, i, j;
@@ -782,7 +770,7 @@ uint16_t TFT_ILI9225_SPI::drawChar(uint16_t x, uint16_t y, uint16_t ch, uint16_t
     return charWidth;
 }
 
-uint16_t TFT_ILI9225_SPI::getCharWidth(uint16_t ch) {
+uint16_t getCharWidth(uint16_t ch) {
     uint16_t charOffset;
     charOffset = (cfont.width * cfont.nbrows) + 1;  // bytes used by each character
     charOffset = (charOffset * (ch - cfont.offset)) + FONT_HEADER_SIZE;  // char offset (add 4 for font header)
@@ -793,44 +781,23 @@ uint16_t TFT_ILI9225_SPI::getCharWidth(uint16_t ch) {
 // Draw a 1-bit image (bitmap) at the specified (x,y) position from the
 // provided bitmap buffer (must be PROGMEM memory) using the specified
 // foreground color (unset bits are transparent).
-void TFT_ILI9225_SPI::drawBitmap(int16_t x, int16_t y,
-const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color) {
-    _drawBitmap( x,  y, bitmap,  w,  h, color,  0, true, true, false );
-}
 
 // Draw a 1-bit image (bitmap) at the specified (x,y) position from the
 // provided bitmap buffer (must be PROGMEM memory) using the specified
 // foreground (for set bits) and background (for clear bits) colors.
-void TFT_ILI9225_SPI::drawBitmap(int16_t x, int16_t y,
-const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg) {
-    _drawBitmap( x,  y, bitmap,  w,  h, color,  bg, false, true, false );
-}
 
 // drawBitmap() variant for RAM-resident (not PROGMEM) bitmaps.
-void TFT_ILI9225_SPI::drawBitmap(int16_t x, int16_t y,
-uint8_t *bitmap, int16_t w, int16_t h, uint16_t color) {
-    _drawBitmap( x,  y, bitmap,  w,  h, color,  0, true, false, false );
-}
 
-// drawBitmap() variant w/background for RAM-resident (not PROGMEM) bitmaps.
-void TFT_ILI9225_SPI::drawBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg) {
-    _drawBitmap( x,  y, bitmap,  w,  h, color,  bg, false, false, false );
-}
 
 //Draw XBitMap Files (*.xbm), exported from GIMP,
 //Usage: Export from GIMP to *.xbm, rename *.xbm to *.c and open in editor.
 //C Array can be directly used with this function
-void TFT_ILI9225_SPI::drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color) {
+void drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color) {
     _drawBitmap( x,  y, bitmap,  w,  h, color,  0, true, true, true );
 }
 
-void TFT_ILI9225_SPI::drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg) {
-    _drawBitmap( x,  y, bitmap,  w,  h, color,  bg, false, true, true );
-}
-
-
 // internal function for drawing bitmaps with/without transparent bg, or from ram or progmem
-void TFT_ILI9225_SPI::_drawBitmap(int16_t x, int16_t y,
+void _drawBitmap(int16_t x, int16_t y,
 const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg, bool transparent, bool progmem,bool Xbit) {
     bool noAutoInc = false;     // Flag set when transparent pixel was 'written'
     int16_t i, j, byteWidth = (w + 7) / 8;
@@ -898,8 +865,7 @@ const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg, bool t
 */
 
 //High speed color bitmap
-void TFT_ILI9225_SPI::drawBitmap(uint16_t x1, uint16_t y1, 
-const uint16_t** bitmap, int16_t w, int16_t h) {
+void drawBitmap(uint16_t x1, uint16_t y1,const uint16_t* bitmap, int16_t w, int16_t h,uint16_t color) {
     _setWindow(x1, y1, x1+w, y1+h);
     gpio_set_value(DataCgpio,1);
     for (uint16_t x = 0; x < w; x++) {
@@ -912,20 +878,10 @@ const uint16_t** bitmap, int16_t w, int16_t h) {
 }
 
 //High speed color bitmap
-void TFT_ILI9225_SPI::drawBitmap(uint16_t x1, uint16_t y1, 
-uint16_t** bitmap, int16_t w, int16_t h) {
-    _setWindow(x1, y1, x1+w, y1+h);
-    gpio_set_value(DataCgpio,1);
-    for (uint16_t x = 0; x < w; x++) {
-        for (uint16_t y = 0; y < h; y++) {
-            uint16_t col = bitmap[x][y];
-            _spiWrite(col>>8);
-            _spiWrite(col);
-        }
-    }
-}
+ 
 
-void TFT_ILI9225_SPI::vertScroll(int16_t top, int16_t scrollines, int16_t offset)
+
+void vertScroll(int16_t top, int16_t scrollines, int16_t offset)
 {
     int16_t bfa = _maxY - top - scrollines;  // bottom fixed area
     int16_t vsp;
@@ -943,30 +899,30 @@ void TFT_ILI9225_SPI::vertScroll(int16_t top, int16_t scrollines, int16_t offset
 
 // TEXT- AND CHARACTER-HANDLING FUNCTIONS ----------------------------------
 
-void TFT_ILI9225_SPI::setGFXFont(const GFXfont *f) {
+void setGFXFont(const GFXfont *f) {
     gfxFont = (GFXfont *)f;
 }
 
 
 // Draw a string
-void TFT_ILI9225_SPI::drawGFXText(int16_t x, int16_t y,string s, uint16_t color) {
+void drawGFXText(int16_t x, int16_t y,string s, uint16_t color) {
 
     int16_t currx = x;
 
     if(gfxFont) {
         // Print every character in string
         #ifdef USE_STRING_CLASS
-        for (uint8_t k = 0; k < s.length(); k++) {
+        for (uint8_t k = 0; k < strlen(s); k++) {
             currx += drawGFXChar(currx, y, s.charAt(k), color) + 1;
         }
         #else
-        for (uint8_t k = 0; k < s.length(); k++) {
+        for (uint8_t k = 0; k < strlen(s); k++) {
             currx += drawGFXChar(currx, y, s[k], color) + 1;
         }
         #endif
     }
 }
-uint16_t TFT_ILI9225_SPI::Read16(void){
+uint16_t Read16(void){
 	//16 spi transfer of 0x0000
 	uint16_t rx;
 	unsigned char ret;
@@ -984,7 +940,7 @@ uint16_t TFT_ILI9225_SPI::Read16(void){
                 pabort("Can't send spi message");
 		return rx;
 }
-uint16_t TFT_ILI9225_SPI::ReadAxis(bool Axis)
+uint16_t ReadAxis(bool Axis)
 {//needs a fix
   int Data;
 
@@ -1002,7 +958,7 @@ uint16_t TFT_ILI9225_SPI::ReadAxis(bool Axis)
 
 
 // Draw a character
-uint16_t TFT_ILI9225_SPI::drawGFXChar(int16_t x, int16_t y, unsigned char c, uint16_t color) {
+uint16_t drawGFXChar(int16_t x, int16_t y, unsigned char c, uint16_t color) {
 
     c -= (uint8_t)pgm_read_byte(&gfxFont->first);
     GFXglyph *glyph  = &(((GFXglyph *)pgm_read_pointer(&gfxFont->glyph))[c]);
@@ -1035,7 +991,7 @@ uint16_t TFT_ILI9225_SPI::drawGFXChar(int16_t x, int16_t y, unsigned char c, uin
 }
 
 
-void TFT_ILI9225_SPI::getGFXCharExtent(uint8_t c, int16_t *gw, int16_t *gh, int16_t *xa) {
+void getGFXCharExtent(uint8_t c, int16_t *gw, int16_t *gh, int16_t *xa) {
     uint8_t first = pgm_read_byte(&gfxFont->first),
             last  = pgm_read_byte(&gfxFont->last);
     // Char present in this font?
@@ -1050,10 +1006,10 @@ void TFT_ILI9225_SPI::getGFXCharExtent(uint8_t c, int16_t *gw, int16_t *gh, int1
 }
 
 
-void TFT_ILI9225_SPI::getGFXTextExtent(string str, int16_t x, int16_t y, int16_t *w, int16_t *h) {
+void getGFXTextExtent(string str, int16_t x, int16_t y, int16_t *w, int16_t *h) {
     *w  = *h = 0;
 
-    for (uint8_t k = 0; k < str.length();k++) {
+    for (uint8_t k = 0; k < strlen(str);k++) {
         uint8_t c = str[k];
         int16_t gw, gh, xa;
         getGFXCharExtent(c, &gw, &gh, &xa);

@@ -12,6 +12,7 @@
  * SCK      SPI0_SCLK (22)
  * MOSI     SPI0_D1   (18)
  * MISO     SPI0_D0   (21)
+ *
  * GND      DGND
  * 3.3V     VDD_3V3
  * RST	    VDD_3V3
@@ -40,7 +41,7 @@ static void pabort(const char *s)
         abort();
 }
 
-static const char *device = "/dev/spidev1.0";
+static const char *device = "/dev/spidev2.0";
 static uint8_t mode;
 static uint8_t bits = 8;
 static uint32_t speed = 10000;
@@ -49,8 +50,25 @@ int fd;
 uint8_t CRC_A_Result[2];
 uint8_t Rx_Global[100];
 uint8_t UID_Value[5];
+uint8_t UID_Old[5];
 uint8_t SAK_Response[3];
 uint8_t ATQA_Buffer[2];
+uint8_t ISNewUID_Detected(void){
+        if((UID_Old[0]!=UID_Value[0])&&
+                (UID_Old[1]!=UID_Value[1])&&
+                (UID_Old[2]!=UID_Value[2])&&
+                (UID_Old[3]!=UID_Value[3])&&
+                (UID_Old[4]!=UID_Value[4])){
+	UID_Old[0]=UID_Value[0];
+ UID_Old[0]=UID_Value[0];
+ UID_Old[1]=UID_Value[1];
+ UID_Old[2]=UID_Value[2];
+ UID_Old[3]=UID_Value[3];
+ UID_Old[4]=UID_Value[4];
+        return 1;
+}
+        else return 0;
+}
 
 //Function Declerations
 void MFRC522_Initialize(void);
@@ -783,7 +801,6 @@ int main(int argc, char *argv[])
 
         int ret = 0;
 //      int temp = 0;
-
         parse_opts(argc, argv);
 
         fd = open(device, O_RDWR);
@@ -831,12 +848,29 @@ int main(int argc, char *argv[])
         {
                if( IsNewCardPresent()){
 			SelectPICC();
-			printf("New Card Yall\n");
+			if(ISNewUID_Detected()==1){
+			printf("New Card \n");
 			printf("UID:");
 			for(char i =0;i<5;i++){
 				printf("%X",UID_Value[i]);
-			}
-			printf("\n");}
+			}//convert -size 320x100 xc:lightblue  -font  -pointsize 72           -fill blue  -draw "text 25,65 'Anthony'" text_draw.gif
+			printf("\n");
+			char str [150];
+			
+			
+			sprintf(str,"convert -size 320x240 xc:lightblue -fill blue -font Times-Roman -pointsize 32 -draw \"text 0,100 'New UID:%x%x%x%x%x'\" /tmp/frame.png",UID_Value[0],UID_Value[1],UID_Value[2],UID_Value[3],UID_Value[4]);
+			
+			system(str);
+                        
+			system("sudo fbi -noverbose -T 1 /tmp/frame.png");
+			char str2 [50];
+			sprintf(str2,"./logidtosheets.py %X%X%X%X%X 0",UID_Value[0],UID_Value[1],UID_Value[2],UID_Value[3],UID_Value[4]);
+			//system(str2);
+			char str3 [50];
+			sprintf(str3,"./BellPWM.py %X%X%X%X%X",UID_Value[0],UID_Value[1],UID_Value[2],UID_Value[3],UID_Value[4]);
+			system(str3);
+}
+}
                 
         }
 
