@@ -20,8 +20,8 @@ sudo bash << EOF
     if lsmod | grep -q 'fbtft '        ; then rmmod --force fbtft;         fi
 
     # Set the pinmuxes for the display
-    config-pin P8_36 pwm
-    config-pin P8_38 pwm
+    config-pin P9_14 pwm
+    config-pin P9_16 pwm
     config-pin P8_45 pwm
     config-pin P8_46 pwm
 
@@ -37,7 +37,8 @@ sudo bash << EOF
     config-pin P9_17 spi_cs # spi 0_cs0
     
     # LED pin, turn on
-    ./backlight.py
+    config-pin P9_15 gpio
+    config-pin P9_15 high
 
     sleep 0.1
     

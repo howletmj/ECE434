@@ -859,14 +859,15 @@ int main(int argc, char *argv[])
 			
 			
 			sprintf(str,"convert -size 320x240 xc:lightblue -fill blue -font Times-Roman -pointsize 32 -draw \"text 0,100 'New UID:%x%x%x%x%x'\" /tmp/frame.png",UID_Value[0],UID_Value[1],UID_Value[2],UID_Value[3],UID_Value[4]);
-			
+			usleep(10000);
 			system(str);
-                        
+                        usleep(10000);
 			system("sudo fbi -noverbose -T 1 /tmp/frame.png");
 			char str2 [50];
 			sprintf(str2,"./logidtosheets.py %X%X%X%X%X 0",UID_Value[0],UID_Value[1],UID_Value[2],UID_Value[3],UID_Value[4]);
-			//system(str2);
+			system(str2);
 			char str3 [50];
+			usleep(1000000);
 			sprintf(str3,"./BellPWM.py %X%X%X%X%X",UID_Value[0],UID_Value[1],UID_Value[2],UID_Value[3],UID_Value[4]);
 			system(str3);
 }
