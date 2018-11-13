@@ -6,6 +6,7 @@ This project is for ece 434 embedded linux course for Rose-Hulman Institute of T
 2. Run setup.sh in MFRCBellDisplay subfolder
 3. Make clean in MFRCBellDisplay subfolder
 4. Make in MFRCBellDisplay subfolder
+5. Modify logtosheetd.py to use your own google sheet
 5. Run MFRC522
 
 ## Additional Information
